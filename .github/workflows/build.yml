@@ -199,7 +199,7 @@ jobs:
         if: matrix.platform == 'windows'
         shell: msys2 {0}
         run: |
-          echo "▶ Bundling Windows runtime DLLs (auto-detect)..."
+          echo "▶ Bundling Windows runtime DLLs (auto-detect via ldd)..."
 
           if [ "${{ matrix.arch }}" = "i686" ]; then
             DLL_DIR="/mingw32/bin"
@@ -211,7 +211,7 @@ jobs:
           cp cpuminer.exe dist/
 
           echo "▶ Scanning DLL dependencies..."
-          ntldd cpuminer.exe | grep "$DLL_DIR" | awk '{print $3}' | while read dll; do
+          ldd cpuminer.exe | grep "$DLL_DIR" | awk '{print $3}' | sort -u | while read dll; do
             if [ -f "$dll" ]; then
               echo "  + $(basename "$dll")"
               cp "$dll" dist/
