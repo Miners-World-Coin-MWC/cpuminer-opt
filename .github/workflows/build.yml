@@ -199,24 +199,43 @@ jobs:
         if: matrix.platform == 'windows'
         shell: msys2 {0}
         run: |
-          echo "▶ Bundling Windows runtime DLLs (auto-detect via ldd)..."
-
-          if [ "${{ matrix.arch }}" = "i686" ]; then
-            DLL_DIR="/mingw32/bin"
-          else
-            DLL_DIR="/mingw64/bin"
-          fi
+          echo "▶ Bundling Windows runtime DLLs..."
 
           mkdir -p dist
           cp cpuminer.exe dist/
 
-          echo "▶ Scanning DLL dependencies..."
-          ldd cpuminer.exe | grep "$DLL_DIR" | awk '{print $3}' | sort -u | while read dll; do
-            if [ -f "$dll" ]; then
-              echo "  + $(basename "$dll")"
-              cp "$dll" dist/
-            fi
-          done
+          # ============================
+          # i686 (MINGW32) – manual, safe
+          # ============================
+          if [ "${{ matrix.arch }}" = "i686" ]; then
+            DLL_DIR="/mingw32/bin"
+            echo "▶ Using fixed DLL list for i686"
+
+            cp "$DLL_DIR/libcurl-4.dll" dist/
+            cp "$DLL_DIR/libgmp-10.dll" dist/
+            cp "$DLL_DIR/libjansson-4.dll" dist/
+            cp "$DLL_DIR/libwinpthread-1.dll" dist/
+
+          # ============================
+          # x86_64 (MINGW64) – auto-detect
+          # ============================
+          else
+            DLL_DIR="/mingw64/bin"
+            echo "▶ Auto-detecting DLLs for x86_64"
+
+            set +e
+            ldd cpuminer.exe 2>/dev/null \
+              | grep "$DLL_DIR" \
+              | awk '{print $3}' \
+              | sort -u \
+              | while read dll; do
+                  if [ -f "$dll" ]; then
+                    echo "  + $(basename "$dll")"
+                    cp "$dll" dist/
+                  fi
+                done
+            set -e
+          fi
 
           echo "▶ Final Windows bundle:"
           ls -lh dist/
