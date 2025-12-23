@@ -178,6 +178,8 @@ jobs:
           cp "$DLL_DIR/libcurl-4.dll" dist/
           cp "$DLL_DIR/libgmp-10.dll" dist/
           cp "$DLL_DIR/libjansson-4.dll" dist/
+          cp "$DLL_DIR/libwinpthread-1.dll" dist/
+          cp "$DLL_DIR/libbrotlidec.dll" dist/
 
           # GCC runtime differs per arch
           if [ "${{ matrix.arch }}" = "x86_64" ]; then
@@ -197,4 +199,4 @@ jobs:
           path: |
             dist/*
             cpuminer
-            *.exe
+
