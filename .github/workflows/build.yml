@@ -174,10 +174,15 @@ jobs:
           mkdir -p dist
           cp cpuminer.exe dist/
 
+          # Common DLLs
           cp "$DLL_DIR/libcurl-4.dll" dist/
           cp "$DLL_DIR/libgmp-10.dll" dist/
-          cp "$DLL_DIR/libgcc_s_seh-1.dll" dist/
           cp "$DLL_DIR/libjansson-4.dll" dist/
+
+          # GCC runtime differs per arch
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            cp "$DLL_DIR/libgcc_s_seh-1.dll" dist/
+          fi
 
           echo "▶ Final Windows bundle:"
           ls -lh dist/
