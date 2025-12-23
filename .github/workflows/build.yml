@@ -180,6 +180,9 @@ jobs:
           cp "$DLL_DIR/libjansson-4.dll" dist/
           cp "$DLL_DIR/libwinpthread-1.dll" dist/
           cp "$DLL_DIR/libbrotlidec.dll" dist/
+          cp "$DLL_DIR/libidn2-0.dll" dist/
+          cp "$DLL_DIR/libnghttp2-14.dll" dist/
+          cp "$DLL_DIR/libnghttp3-9.dll" dist/
 
           # GCC runtime differs per arch
           if [ "${{ matrix.arch }}" = "x86_64" ]; then
