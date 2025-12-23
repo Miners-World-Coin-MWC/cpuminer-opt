@@ -159,11 +159,47 @@ jobs:
           ./configure --with-curl
           make -j3
 
+      # - name: Bundle Windows DLLs
+      #   if: matrix.platform == 'windows'
+      #   shell: msys2 {0}
+      #   run: |
+      #     echo "▶ Bundling Windows runtime DLLs..."
+
+      #     if [ "${{ matrix.arch }}" = "i686" ]; then
+      #       DLL_DIR="/mingw32/bin"
+      #     else
+      #       DLL_DIR="/mingw64/bin"
+      #     fi
+
+      #     mkdir -p dist
+      #     cp cpuminer.exe dist/
+
+      #     # Common DLLs
+      #     cp "$DLL_DIR/libcurl-4.dll" dist/
+      #     cp "$DLL_DIR/libgmp-10.dll" dist/
+      #     cp "$DLL_DIR/libjansson-4.dll" dist/
+      #     cp "$DLL_DIR/libwinpthread-1.dll" dist/
+      #     cp "$DLL_DIR/libbrotlidec.dll" dist/
+      #     cp "$DLL_DIR/libidn2-0.dll" dist/
+      #     cp "$DLL_DIR/libnghttp2-14.dll" dist/
+      #     cp "$DLL_DIR/libnghttp3-9.dll" dist/
+      #     cp "$DLL_DIR/libngtcp2-16.dll" dist/
+      #     cp "$DLL_DIR/libngtcp2_crypto_0ssl-0.dll" dist/
+      #     cp "$DLL_DIR/libpsl-5.dll" dist/
+
+      #     # GCC runtime differs per arch
+      #     if [ "${{ matrix.arch }}" = "x86_64" ]; then
+      #       cp "$DLL_DIR/libgcc_s_seh-1.dll" dist/
+      #     fi
+
+      #     echo "▶ Final Windows bundle:"
+      #     ls -lh dist/
+
       - name: Bundle Windows DLLs
         if: matrix.platform == 'windows'
         shell: msys2 {0}
         run: |
-          echo "▶ Bundling Windows runtime DLLs..."
+          echo "▶ Bundling Windows runtime DLLs (auto-detect)..."
 
           if [ "${{ matrix.arch }}" = "i686" ]; then
             DLL_DIR="/mingw32/bin"
@@ -174,23 +210,13 @@ jobs:
           mkdir -p dist
           cp cpuminer.exe dist/
 
-          # Common DLLs
-          cp "$DLL_DIR/libcurl-4.dll" dist/
-          cp "$DLL_DIR/libgmp-10.dll" dist/
-          cp "$DLL_DIR/libjansson-4.dll" dist/
-          cp "$DLL_DIR/libwinpthread-1.dll" dist/
-          cp "$DLL_DIR/libbrotlidec.dll" dist/
-          cp "$DLL_DIR/libidn2-0.dll" dist/
-          cp "$DLL_DIR/libnghttp2-14.dll" dist/
-          cp "$DLL_DIR/libnghttp3-9.dll" dist/
-          cp "$DLL_DIR/libngtcp2-16.dll" dist/
-          cp "$DLL_DIR/libngtcp2_crypto_0ssl-0.dll" dist/
-          cp "$DLL_DIR/libpsl-5.dll" dist/
-
-          # GCC runtime differs per arch
-          if [ "${{ matrix.arch }}" = "x86_64" ]; then
-            cp "$DLL_DIR/libgcc_s_seh-1.dll" dist/
-          fi
+          echo "▶ Scanning DLL dependencies..."
+          ntldd cpuminer.exe | grep "$DLL_DIR" | awk '{print $3}' | while read dll; do
+            if [ -f "$dll" ]; then
+              echo "  + $(basename "$dll")"
+              cp "$dll" dist/
+            fi
+          done
 
           echo "▶ Final Windows bundle:"
           ls -lh dist/
