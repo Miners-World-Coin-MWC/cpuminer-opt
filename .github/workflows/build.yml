@@ -35,13 +35,13 @@ jobs:
           # MACOS
           # ======================
           - name: x86_64-macos
-            os: macos-15-intel          # Intel runner
+            os: macos-15-intel
             platform: macos
             arch: x86_64
             host: x86_64-apple-darwin
 
           - name: arm64-macos
-            os: macos-latest      # Apple Silicon
+            os: macos-latest
             platform: macos
             arch: arm64
             host: arm64-apple-darwin
@@ -159,6 +159,29 @@ jobs:
           ./configure --with-curl
           make -j3
 
+      - name: Bundle Windows DLLs
+        if: matrix.platform == 'windows'
+        shell: msys2 {0}
+        run: |
+          echo "▶ Bundling Windows runtime DLLs..."
+
+          if [ "${{ matrix.arch }}" = "i686" ]; then
+            DLL_DIR="/mingw32/bin"
+          else
+            DLL_DIR="/mingw64/bin"
+          fi
+
+          mkdir -p dist
+          cp cpuminer.exe dist/
+
+          cp "$DLL_DIR/libcurl-4.dll" dist/
+          cp "$DLL_DIR/libgmp-10.dll" dist/
+          cp "$DLL_DIR/libgcc_s_seh-1.dll" dist/
+          cp "$DLL_DIR/libjansson-4.dll" dist/
+
+          echo "▶ Final Windows bundle:"
+          ls -lh dist/
+
       # =================================================
       # ARTIFACTS
       # =================================================
@@ -167,5 +190,6 @@ jobs:
         with:
           name: cpuminer-opt-${{ matrix.name }}
           path: |
+            dist/*
             cpuminer
             *.exe
