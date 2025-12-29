@@ -768,7 +768,7 @@ static const char* const algo_names[] = {
         "yescryptr32",
         "yespower",
         "yespowerr16",
-        "yespowerwmc",
+        "yespowermwc",
         "yespower-b2b",
         "zr5",
         "\0"
